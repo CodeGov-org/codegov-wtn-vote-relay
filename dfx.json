@@ -1,0 +1,10 @@
+{
+  "canisters": {
+    "codegov-wtn-vote-relay": {
+      "candid": "canister/can.did",
+      "package": "codegov_wtn_vote_relay",
+      "type": "rust"
+    }
+  },
+  "version": 1
+}
