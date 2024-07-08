@@ -3,3 +3,16 @@ members = [
     "canister"
 ]
 resolver = "2"
+
+[workspace.package]
+version = "0.12.0"
+edition = "2021"
+
+[workspace.dependencies]
+candid = "0.10.9"
+ic-cdk = "0.15.0"
+ic-cdk-timers = "0.9.0"
+ic_principal = "0.1.1"
+ic-stable-structures = "0.6.5"
+rmp-serde = "1.3.0"
+serde = "1.0.204"
