@@ -2,6 +2,7 @@ use candid::CandidType;
 use ic_principal::Principal;
 use serde::{Deserialize, Serialize};
 
+mod jobs;
 mod lifecycle;
 mod memory;
 mod state;
@@ -37,6 +38,12 @@ impl InitOrUpgradeArgs {
         };
         args
     }
+}
+
+#[derive(Serialize, Deserialize)]
+struct Vote {
+    proposal_id: u64,
+    vote: bool,
 }
 
 #[cfg(test)]
