@@ -1,5 +1,5 @@
 use crate::state::State;
-use crate::{InitOrUpgradeArgs, state};
+use crate::{state, InitOrUpgradeArgs};
 use ic_cdk::init;
 
 #[init]
