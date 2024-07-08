@@ -34,6 +34,10 @@ jobs:
           toolchain: 1.79.0
           override: true
       - run: rustup component add clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "build-debug"
+          save-if: "false"
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
@@ -49,6 +53,10 @@ jobs:
           profile: minimal
           toolchain: 1.79.0
           override: true
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "build-debug"
+          save-if: "false"
       - uses: actions-rs/cargo@v1
         with:
           command: test
