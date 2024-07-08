@@ -1,7 +1,7 @@
-use std::cell::RefCell;
+use crate::InitArgs;
 use ic_principal::Principal;
 use serde::{Deserialize, Serialize};
-use crate::InitArgs;
+use std::cell::RefCell;
 
 thread_local! {
     static STATE: RefCell<Option<State>> = RefCell::default();
@@ -14,8 +14,6 @@ pub struct State {
     nns_neuron_id: u64,
     wtn_neuron_id: [u8; 32],
 }
-
-
 
 const STATE_ALREADY_INITIALIZED: &str = "State has already been initialized";
 const STATE_NOT_INITIALIZED: &str = "State has not been initialized";
@@ -30,10 +28,12 @@ pub fn init(state: State) {
     })
 }
 
+#[allow(dead_code)]
 pub fn read<F: FnOnce(&State) -> R, R>(f: F) -> R {
     STATE.with_borrow(|s| f(s.as_ref().expect(STATE_NOT_INITIALIZED)))
 }
 
+#[allow(dead_code)]
 pub fn mutate<F: FnOnce(&mut State) -> R, R>(f: F) -> R {
     STATE.with_borrow_mut(|s| f(s.as_mut().expect(STATE_NOT_INITIALIZED)))
 }
