@@ -15,4 +15,5 @@ fn post_upgrade(_args: InitOrUpgradeArgs) {
     let state = State::deserialize(&mut deserializer).unwrap();
 
     crate::state::init(state);
+    crate::jobs::start_jobs();
 }
