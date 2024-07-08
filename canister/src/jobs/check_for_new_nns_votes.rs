@@ -27,7 +27,9 @@ async fn run() {
                 s.record_nns_vote(vote);
             }
         }),
-        _ => {}
+        _ => {
+            // TODO log error
+        }
     }
 }
 
