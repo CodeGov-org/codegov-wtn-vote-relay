@@ -16,4 +16,6 @@ fn post_upgrade(_args: InitOrUpgradeArgs) {
 
     crate::jobs::start_jobs(&state);
     crate::state::init(state);
+
+    ic_cdk::println!("Canister upgrade complete");
 }

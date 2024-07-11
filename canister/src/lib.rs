@@ -41,23 +41,23 @@ impl InitOrUpgradeArgs {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 enum VoteToProcess {
     NnsVote(NnsVote),
     PendingWtnVote(WtnVote),
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 struct NnsVote {
     proposal_id: u64,
-    vote: bool,
+    adopt: bool,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 struct WtnVote {
     nns_proposal_id: u64,
     wtn_proposal_id: u64,
-    vote: bool,
+    adopt: bool,
 }
 
 #[cfg(test)]

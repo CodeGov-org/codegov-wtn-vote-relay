@@ -22,8 +22,8 @@ fn run() {
     TIMER_ID.set(None);
 
     if let Some(vote) = state::mutate(|s| s.pop_next_vote_to_process()) {
+        ic_cdk::println!("Processing vote: {vote:?}");
         ic_cdk::spawn(process_vote(vote));
-        state::read(start_job_if_required);
     }
 }
 
@@ -37,10 +37,19 @@ async fn process_vote(vote: VoteToProcess) {
                 Ok(Some(wtn_proposal_id)) => Some(VoteToProcess::PendingWtnVote(WtnVote {
                     nns_proposal_id: nns_vote.proposal_id,
                     wtn_proposal_id,
-                    vote: nns_vote.vote,
+                    adopt: nns_vote.adopt,
                 })),
-                Ok(None) => None,
-                Err(_) => Some(VoteToProcess::NnsVote(nns_vote)),
+                Ok(None) => {
+                    ic_cdk::println!(
+                        "No WTN proposal found for NNS proposal {}",
+                        nns_vote.proposal_id
+                    );
+                    None
+                }
+                Err(error) => {
+                    ic_cdk::eprintln!("Error calling `get_wtn_proposal_id`: {error:?}");
+                    Some(VoteToProcess::NnsVote(nns_vote))
+                }
             };
             if let Some(vote) = vote_to_process {
                 state::mutate(|s| s.push_vote_to_process(vote));
@@ -55,16 +64,17 @@ async fn process_vote(vote: VoteToProcess) {
                     proposal: Some(ProposalId {
                         id: wtn_vote.wtn_proposal_id,
                     }),
-                    vote: if wtn_vote.vote { 1 } else { -1 },
+                    vote: if wtn_vote.adopt { 1 } else { -1 },
                 })),
             };
             let response: CallResult<()> =
                 ic_cdk::call(canister_id, "manage_neuron", (args,)).await;
             state::mutate(|s| {
-                if response.is_ok() {
-                    s.record_wtn_vote_registered(wtn_vote);
-                } else {
+                if let Err(error) = response {
+                    ic_cdk::eprintln!("Error calling `manage_neuron`: {error:?}");
                     s.push_vote_to_process(VoteToProcess::PendingWtnVote(wtn_vote));
+                } else {
+                    s.record_wtn_vote_registered(wtn_vote);
                 }
             });
         }

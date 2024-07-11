@@ -9,4 +9,6 @@ fn init(args: InitOrUpgradeArgs) {
     let state = State::new(init_args);
     crate::jobs::start_jobs(&state);
     crate::state::init(state);
+
+    ic_cdk::println!("Canister initialized");
 }
