@@ -30,7 +30,7 @@ fn run() {
 async fn process_vote(vote: VoteToProcess) {
     match vote {
         VoteToProcess::NnsVote(nns_vote) => {
-            let canister_id = state::read(|s| s.wtn_governance_canister_id());
+            let canister_id = state::read(|s| s.wtn_protocol_canister_id());
             let response: CallResult<(Option<u64>,)> =
                 ic_cdk::call(canister_id, "get_wtn_proposal_id", (nns_vote.proposal_id,)).await;
             let vote_to_process = match response.map(|r| r.0) {
