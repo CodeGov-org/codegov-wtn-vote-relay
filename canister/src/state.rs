@@ -91,10 +91,12 @@ impl State {
     }
 
     pub fn record_wtn_vote_registered(&mut self, vote: WtnVote) {
+        ic_cdk::println!("WTN vote registered: {vote:?}");
         self.wtn_votes.push(vote);
     }
 
     pub fn push_vote_to_process(&mut self, vote: VoteToProcess) {
+        ic_cdk::println!("Vote queued for processing: {vote:?}");
         self.votes_to_process.push_back(vote);
         crate::jobs::process_votes::start_job_if_required(self);
     }

@@ -12,6 +12,8 @@ pub fn start_job() {
 }
 
 async fn run() {
+    ic_cdk::println!("Checking for new NNS votes");
+
     let (nns_governance_canister_id, nns_neuron_id) =
         state::read(|s| (s.nns_governance_canister_id(), s.nns_neuron_id()));
 
@@ -26,9 +28,10 @@ async fn run() {
             {
                 s.record_nns_vote(vote);
             }
+            ic_cdk::println!("Check for new NNS votes completed successfully");
         }),
-        _ => {
-            // TODO log error
+        error => {
+            ic_cdk::eprintln!("Error calling `get_neuron_info`: {error:?}")
         }
     }
 }
@@ -47,23 +50,23 @@ async fn get_neuron_info(
     response.map(|r| r.0)
 }
 
-#[derive(CandidType, Deserialize)]
+#[derive(CandidType, Deserialize, Debug)]
 struct NeuronInfo {
     recent_ballots: Vec<BallotInfo>,
 }
 
-#[derive(CandidType, Deserialize)]
+#[derive(CandidType, Deserialize, Debug)]
 struct BallotInfo {
     vote: i32,
     proposal_id: Option<ProposalId>,
 }
 
-#[derive(CandidType, Deserialize)]
+#[derive(CandidType, Deserialize, Debug)]
 struct ProposalId {
     id: u64,
 }
 
-#[derive(CandidType, Deserialize)]
+#[derive(CandidType, Deserialize, Debug)]
 struct GovernanceError {
     error_message: String,
     error_type: i32,
@@ -76,7 +79,7 @@ impl TryFrom<BallotInfo> for NnsVote {
         if let Some(proposal_id) = value.proposal_id {
             Ok(NnsVote {
                 proposal_id: proposal_id.id,
-                vote: value.vote == 1,
+                adopt: value.vote == 1,
             })
         } else {
             Err(())
