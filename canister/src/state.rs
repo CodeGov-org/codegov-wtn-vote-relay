@@ -12,6 +12,7 @@ thread_local! {
 pub struct State {
     nns_governance_canister_id: Principal,
     wtn_governance_canister_id: Principal,
+    wtn_protocol_canister_id: Principal,
     nns_neuron_id: u64,
     wtn_neuron_id: [u8; 32],
     latest_seen_nns_vote: Option<u64>, // The proposal Id
@@ -51,6 +52,7 @@ impl State {
         State {
             nns_governance_canister_id: args.nns_governance_canister_id,
             wtn_governance_canister_id: args.wtn_governance_canister_id,
+            wtn_protocol_canister_id: args.wtn_protocol_canister_id,
             nns_neuron_id: args.nns_neuron_id,
             wtn_neuron_id: args.wtn_neuron_id,
             latest_seen_nns_vote: None,
@@ -65,6 +67,10 @@ impl State {
 
     pub fn wtn_governance_canister_id(&self) -> Principal {
         self.wtn_governance_canister_id
+    }
+
+    pub fn wtn_protocol_canister_id(&self) -> Principal {
+        self.wtn_protocol_canister_id
     }
 
     pub fn nns_neuron_id(&self) -> u64 {
