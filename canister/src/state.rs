@@ -1,4 +1,4 @@
-use crate::{InitArgs, Vote};
+use crate::{InitArgs, NnsVote, VoteToProcess, WtnVote};
 use ic_principal::Principal;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
@@ -15,7 +15,8 @@ pub struct State {
     nns_neuron_id: u64,
     wtn_neuron_id: [u8; 32],
     latest_seen_nns_vote: Option<u64>, // The proposal Id
-    unprocessed_nns_votes: VecDeque<Vote>,
+    votes_to_process: VecDeque<VoteToProcess>,
+    wtn_votes: Vec<WtnVote>,
 }
 
 const STATE_ALREADY_INITIALIZED: &str = "State has already been initialized";
@@ -53,7 +54,8 @@ impl State {
             nns_neuron_id: args.nns_neuron_id,
             wtn_neuron_id: args.wtn_neuron_id,
             latest_seen_nns_vote: None,
-            unprocessed_nns_votes: VecDeque::new(),
+            votes_to_process: VecDeque::new(),
+            wtn_votes: Vec::new(),
         }
     }
 
@@ -61,16 +63,41 @@ impl State {
         self.nns_governance_canister_id
     }
 
+    pub fn wtn_governance_canister_id(&self) -> Principal {
+        self.wtn_governance_canister_id
+    }
+
     pub fn nns_neuron_id(&self) -> u64 {
         self.nns_neuron_id
+    }
+
+    pub fn wtn_neuron_id(&self) -> [u8; 32] {
+        self.wtn_neuron_id
     }
 
     pub fn latest_seen_nns_vote(&self) -> Option<u64> {
         self.latest_seen_nns_vote
     }
 
-    pub fn record_nns_vote(&mut self, vote: Vote) {
+    pub fn record_nns_vote(&mut self, vote: NnsVote) {
         self.latest_seen_nns_vote = Some(vote.proposal_id);
-        self.unprocessed_nns_votes.push_back(vote);
+        self.push_vote_to_process(VoteToProcess::NnsVote(vote));
+    }
+
+    pub fn record_wtn_vote_registered(&mut self, vote: WtnVote) {
+        self.wtn_votes.push(vote);
+    }
+
+    pub fn push_vote_to_process(&mut self, vote: VoteToProcess) {
+        self.votes_to_process.push_back(vote);
+        crate::jobs::process_votes::start_job_if_required(self);
+    }
+
+    pub fn pop_next_vote_to_process(&mut self) -> Option<VoteToProcess> {
+        self.votes_to_process.pop_front()
+    }
+
+    pub fn votes_to_process_count(&self) -> usize {
+        self.votes_to_process.len()
     }
 }
