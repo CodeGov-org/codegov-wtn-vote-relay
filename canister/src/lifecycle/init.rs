@@ -6,6 +6,7 @@ use ic_cdk::init;
 fn init(args: InitOrUpgradeArgs) {
     let init_args = args.to_init_args();
 
-    crate::state::init(State::new(init_args));
-    crate::jobs::start_jobs();
+    let state = State::new(init_args);
+    crate::jobs::start_jobs(&state);
+    crate::state::init(state);
 }

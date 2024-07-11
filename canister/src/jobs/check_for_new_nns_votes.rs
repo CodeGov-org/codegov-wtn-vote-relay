@@ -1,4 +1,4 @@
-use crate::{state, Vote};
+use crate::{state, NnsVote};
 use candid::CandidType;
 use ic_cdk::api::call::CallResult;
 use ic_principal::Principal;
@@ -21,7 +21,7 @@ async fn run() {
             for vote in neuron
                 .recent_ballots
                 .into_iter()
-                .filter_map(|b| Vote::try_from(b).ok())
+                .filter_map(|b| NnsVote::try_from(b).ok())
                 .take_while(|v| Some(v.proposal_id) != latest_seen_vote)
             {
                 s.record_nns_vote(vote);
@@ -69,12 +69,12 @@ struct GovernanceError {
     error_type: i32,
 }
 
-impl TryFrom<BallotInfo> for Vote {
+impl TryFrom<BallotInfo> for NnsVote {
     type Error = ();
 
     fn try_from(value: BallotInfo) -> Result<Self, Self::Error> {
         if let Some(proposal_id) = value.proposal_id {
-            Ok(Vote {
+            Ok(NnsVote {
                 proposal_id: proposal_id.id,
                 vote: value.vote == 1,
             })

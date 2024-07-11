@@ -41,8 +41,21 @@ impl InitOrUpgradeArgs {
 }
 
 #[derive(Serialize, Deserialize)]
-struct Vote {
+enum VoteToProcess {
+    NnsVote(NnsVote),
+    PendingWtnVote(WtnVote),
+}
+
+#[derive(Serialize, Deserialize)]
+struct NnsVote {
     proposal_id: u64,
+    vote: bool,
+}
+
+#[derive(Serialize, Deserialize)]
+struct WtnVote {
+    nns_proposal_id: u64,
+    wtn_proposal_id: u64,
     vote: bool,
 }
 
