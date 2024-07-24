@@ -19,12 +19,10 @@ async fn run() {
 
     match get_neuron_info(nns_governance_canister_id, nns_neuron_id).await {
         Ok(Ok(neuron)) => state::mutate(|s| {
-            let latest_seen_vote = s.latest_seen_nns_vote();
             for vote in neuron
                 .recent_ballots
                 .into_iter()
                 .filter_map(|b| NnsVote::try_from(b).ok())
-                .take_while(|v| Some(v.proposal_id) != latest_seen_vote)
             {
                 s.record_nns_vote(vote);
             }
