@@ -2,7 +2,7 @@ use crate::{InitArgs, NnsVote, VoteToProcess, WtnVote};
 use ic_principal::Principal;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
-use std::collections::VecDeque;
+use std::collections::{BTreeSet, VecDeque};
 
 thread_local! {
     static STATE: RefCell<Option<State>> = RefCell::default();
@@ -15,7 +15,7 @@ pub struct State {
     wtn_protocol_canister_id: Principal,
     nns_neuron_id: u64,
     wtn_neuron_id: [u8; 32],
-    latest_seen_nns_vote: Option<u64>, // The proposal Id
+    seen_nns_votes: BTreeSet<u64>, // The proposal Id
     votes_to_process: VecDeque<VoteToProcess>,
     wtn_votes: Vec<WtnVote>,
 }
@@ -55,7 +55,7 @@ impl State {
             wtn_protocol_canister_id: args.wtn_protocol_canister_id,
             nns_neuron_id: args.nns_neuron_id,
             wtn_neuron_id: args.wtn_neuron_id,
-            latest_seen_nns_vote: None,
+            seen_nns_votes: BTreeSet::new(),
             votes_to_process: VecDeque::new(),
             wtn_votes: Vec::new(),
         }
@@ -81,13 +81,11 @@ impl State {
         self.wtn_neuron_id
     }
 
-    pub fn latest_seen_nns_vote(&self) -> Option<u64> {
-        self.latest_seen_nns_vote
-    }
-
     pub fn record_nns_vote(&mut self, vote: NnsVote) {
-        self.latest_seen_nns_vote = Some(vote.proposal_id);
-        self.push_vote_to_process(VoteToProcess::NnsVote(vote));
+        if self.seen_nns_votes.insert(vote.proposal_id) {
+            self.push_vote_to_process(VoteToProcess::NnsVote(vote));
+            self.prune_old_nns_votes();
+        }
     }
 
     pub fn record_wtn_vote_registered(&mut self, vote: WtnVote) {
@@ -107,5 +105,11 @@ impl State {
 
     pub fn votes_to_process_count(&self) -> usize {
         self.votes_to_process.len()
+    }
+
+    fn prune_old_nns_votes(&mut self) {
+        while self.seen_nns_votes.len() > 1000 {
+            self.seen_nns_votes.pop_first();
+        }
     }
 }
