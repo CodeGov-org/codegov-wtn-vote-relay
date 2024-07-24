@@ -15,7 +15,7 @@ pub struct State {
     wtn_protocol_canister_id: Principal,
     nns_neuron_id: u64,
     wtn_neuron_id: [u8; 32],
-    seen_nns_votes: BTreeSet<u64>, // The proposal Id
+    already_seen_nns_votes: BTreeSet<u64>, // The proposal Id
     votes_to_process: VecDeque<VoteToProcess>,
     wtn_votes: Vec<WtnVote>,
 }
@@ -55,7 +55,7 @@ impl State {
             wtn_protocol_canister_id: args.wtn_protocol_canister_id,
             nns_neuron_id: args.nns_neuron_id,
             wtn_neuron_id: args.wtn_neuron_id,
-            seen_nns_votes: BTreeSet::new(),
+            already_seen_nns_votes: BTreeSet::new(),
             votes_to_process: VecDeque::new(),
             wtn_votes: Vec::new(),
         }
@@ -82,7 +82,7 @@ impl State {
     }
 
     pub fn record_nns_vote(&mut self, vote: NnsVote) {
-        if self.seen_nns_votes.insert(vote.proposal_id) {
+        if self.already_seen_nns_votes.insert(vote.proposal_id) {
             self.push_vote_to_process(VoteToProcess::NnsVote(vote));
             self.prune_old_nns_votes();
         }
@@ -108,8 +108,8 @@ impl State {
     }
 
     fn prune_old_nns_votes(&mut self) {
-        while self.seen_nns_votes.len() > 1000 {
-            self.seen_nns_votes.pop_first();
+        while self.already_seen_nns_votes.len() > 1000 {
+            self.already_seen_nns_votes.pop_first();
         }
     }
 }
