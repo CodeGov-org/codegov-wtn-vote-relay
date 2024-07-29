@@ -9,5 +9,5 @@ type RegisterNeuronPairArgs = record {
   wtn_neuron_id : blob;
 };
 service : (InitOrUpgradeArgs) -> {
-  register_neuron_pair : (RegisterNeuronPairArgs) -> (bool);
+  register_neuron_pair : (RegisterNeuronPairArgs) -> (opt nat64);
 }

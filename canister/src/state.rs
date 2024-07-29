@@ -74,14 +74,15 @@ impl State {
         caller: Principal,
         nns_neuron_id: u64,
         wtn_neuron_id: [u8; 32],
-    ) -> bool {
+    ) -> Option<u64> {
         let pair = NeuronPair::new(caller, nns_neuron_id, wtn_neuron_id);
-        match self.neuron_pairs.entry(pair.id()) {
+        let id = pair.id();
+        match self.neuron_pairs.entry(id) {
             Vacant(e) => {
                 e.insert(pair);
-                true
+                Some(id)
             }
-            _ => false,
+            _ => None,
         }
     }
 
