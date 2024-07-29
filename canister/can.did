@@ -1,3 +1,4 @@
+type DeregisterNeuronPairArgs = record { pair_id : nat64 };
 type InitArgs = record {
   wtn_governance_canister_id : principal;
   nns_governance_canister_id : principal;
@@ -9,5 +10,6 @@ type RegisterNeuronPairArgs = record {
   wtn_neuron_id : blob;
 };
 service : (InitOrUpgradeArgs) -> {
+  deregister_neuron_pair : (DeregisterNeuronPairArgs) -> (bool);
   register_neuron_pair : (RegisterNeuronPairArgs) -> (opt nat64);
 }
