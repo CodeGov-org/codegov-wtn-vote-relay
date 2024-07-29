@@ -6,6 +6,7 @@ mod jobs;
 mod lifecycle;
 mod memory;
 mod neuron_pair;
+mod queries;
 mod state;
 mod updates;
 
@@ -69,6 +70,14 @@ struct RegisterNeuronPairArgs {
 #[derive(CandidType, Serialize, Deserialize)]
 struct DeregisterNeuronPairArgs {
     pair_id: u64,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Debug)]
+struct NeuronPairPublic {
+    id: u64,
+    admin: Principal,
+    nns_neuron_id: u64,
+    wtn_neuron_id: [u8; 32],
 }
 
 #[cfg(test)]
