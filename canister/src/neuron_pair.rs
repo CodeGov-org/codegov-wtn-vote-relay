@@ -36,10 +36,6 @@ impl NeuronPair {
         self.id
     }
 
-    pub fn admin(&self) -> Principal {
-        self.admin
-    }
-
     pub fn nns_neuron_id(&self) -> u64 {
         self.nns_neuron_id
     }
