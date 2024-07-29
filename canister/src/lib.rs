@@ -27,14 +27,14 @@ struct InitArgs {
 struct UpgradeArgs {}
 
 impl InitOrUpgradeArgs {
-    fn to_init_args(self) -> InitArgs {
+    fn into_init_args(self) -> InitArgs {
         let InitOrUpgradeArgs::Init(args) = self else {
             panic!("InitOrUpgradeArgs not of type Init");
         };
         args
     }
 
-    fn to_upgrade_args(self) -> UpgradeArgs {
+    fn into_upgrade_args(self) -> UpgradeArgs {
         let InitOrUpgradeArgs::Upgrade(args) = self else {
             panic!("InitOrUpgradeArgs not of type Upgrade");
         };
