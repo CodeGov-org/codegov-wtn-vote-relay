@@ -110,6 +110,7 @@ name = "codegov_wtn_vote_relay"
 version = "0.1.0"
 dependencies = [
  "candid",
+ "futures",
  "ic-cdk",
  "ic-cdk-timers",
  "ic-stable-structures",

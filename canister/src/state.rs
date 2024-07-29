@@ -1,8 +1,10 @@
+use crate::neuron_pair::NeuronPair;
 use crate::{InitArgs, NnsVote, VoteToProcess, WtnVote};
 use ic_principal::Principal;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
-use std::collections::{BTreeSet, VecDeque};
+use std::collections::btree_map::Entry::Vacant;
+use std::collections::{BTreeMap, VecDeque};
 
 thread_local! {
     static STATE: RefCell<Option<State>> = RefCell::default();
@@ -13,11 +15,8 @@ pub struct State {
     nns_governance_canister_id: Principal,
     wtn_governance_canister_id: Principal,
     wtn_protocol_canister_id: Principal,
-    nns_neuron_id: u64,
-    wtn_neuron_id: [u8; 32],
-    already_seen_nns_votes: BTreeSet<u64>, // The proposal Id
+    neuron_pairs: BTreeMap<u64, NeuronPair>,
     votes_to_process: VecDeque<VoteToProcess>,
-    wtn_votes: Vec<WtnVote>,
 }
 
 const STATE_ALREADY_INITIALIZED: &str = "State has already been initialized";
@@ -53,11 +52,8 @@ impl State {
             nns_governance_canister_id: args.nns_governance_canister_id,
             wtn_governance_canister_id: args.wtn_governance_canister_id,
             wtn_protocol_canister_id: args.wtn_protocol_canister_id,
-            nns_neuron_id: args.nns_neuron_id,
-            wtn_neuron_id: args.wtn_neuron_id,
-            already_seen_nns_votes: BTreeSet::new(),
+            neuron_pairs: BTreeMap::new(),
             votes_to_process: VecDeque::new(),
-            wtn_votes: Vec::new(),
         }
     }
 
@@ -73,24 +69,43 @@ impl State {
         self.wtn_protocol_canister_id
     }
 
-    pub fn nns_neuron_id(&self) -> u64 {
-        self.nns_neuron_id
-    }
-
-    pub fn wtn_neuron_id(&self) -> [u8; 32] {
-        self.wtn_neuron_id
-    }
-
-    pub fn record_nns_vote(&mut self, vote: NnsVote) {
-        if self.already_seen_nns_votes.insert(vote.proposal_id) {
-            self.push_vote_to_process(VoteToProcess::NnsVote(vote));
-            self.prune_old_nns_votes();
+    pub fn register_neuron_pair(
+        &mut self,
+        caller: Principal,
+        nns_neuron_id: u64,
+        wtn_neuron_id: [u8; 32],
+    ) -> bool {
+        let pair = NeuronPair::new(caller, nns_neuron_id, wtn_neuron_id);
+        match self.neuron_pairs.entry(pair.id()) {
+            Vacant(e) => {
+                e.insert(pair);
+                true
+            }
+            _ => false,
         }
     }
 
-    pub fn record_wtn_vote_registered(&mut self, vote: WtnVote) {
-        ic_cdk::println!("WTN vote registered: {vote:?}");
-        self.wtn_votes.push(vote);
+    pub fn neuron_pair(&self, pair_id: u64) -> Option<&NeuronPair> {
+        self.neuron_pairs.get(&pair_id)
+    }
+
+    pub fn iter_neuron_pairs(&self) -> impl Iterator<Item = &NeuronPair> {
+        self.neuron_pairs.values()
+    }
+
+    pub fn record_nns_vote(&mut self, pair_id: u64, vote: NnsVote) {
+        if let Some(pair) = self.neuron_pairs.get_mut(&pair_id) {
+            if pair.is_newly_seen_nns_vote(vote.proposal_id) {
+                self.push_vote_to_process(VoteToProcess::NnsVote(pair_id, vote));
+            }
+        }
+    }
+
+    pub fn record_wtn_vote_registered(&mut self, pair_id: u64, vote: WtnVote) {
+        if let Some(pair) = self.neuron_pairs.get_mut(&pair_id) {
+            ic_cdk::println!("WTN vote registered: {vote:?}");
+            pair.record_wtn_vote_registered(vote);
+        }
     }
 
     pub fn push_vote_to_process(&mut self, vote: VoteToProcess) {
@@ -105,11 +120,5 @@ impl State {
 
     pub fn votes_to_process_count(&self) -> usize {
         self.votes_to_process.len()
-    }
-
-    fn prune_old_nns_votes(&mut self) {
-        while self.already_seen_nns_votes.len() > 1000 {
-            self.already_seen_nns_votes.pop_first();
-        }
     }
 }

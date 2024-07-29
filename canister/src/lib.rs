@@ -5,7 +5,9 @@ use serde::{Deserialize, Serialize};
 mod jobs;
 mod lifecycle;
 mod memory;
+mod neuron_pair;
 mod state;
+mod updates;
 
 #[derive(CandidType, Serialize, Deserialize, Debug)]
 pub enum InitOrUpgradeArgs {
@@ -43,8 +45,8 @@ impl InitOrUpgradeArgs {
 
 #[derive(Serialize, Deserialize, Debug)]
 enum VoteToProcess {
-    NnsVote(NnsVote),
-    PendingWtnVote(WtnVote),
+    NnsVote(u64, NnsVote),
+    PendingWtnVote(u64, WtnVote),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -58,6 +60,12 @@ struct WtnVote {
     nns_proposal_id: u64,
     wtn_proposal_id: u64,
     adopt: bool,
+}
+
+#[derive(CandidType, Serialize, Deserialize)]
+struct RegisterNeuronPairArgs {
+    nns_neuron_id: u64,
+    wtn_neuron_id: [u8; 32],
 }
 
 #[cfg(test)]

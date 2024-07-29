@@ -14,9 +14,16 @@ pub fn start_job() {
 async fn run() {
     ic_cdk::println!("Checking for new NNS votes");
 
-    let (nns_governance_canister_id, nns_neuron_id) =
-        state::read(|s| (s.nns_governance_canister_id(), s.nns_neuron_id()));
+    let futures: Vec<_> = state::mutate(|s| {
+        s.iter_neuron_pairs()
+            .map(|p| run_single(p.id(), s.nns_governance_canister_id(), p.nns_neuron_id()))
+            .collect()
+    });
 
+    futures::future::join_all(futures).await;
+}
+
+async fn run_single(pair_id: u64, nns_governance_canister_id: Principal, nns_neuron_id: u64) {
     match get_neuron_info(nns_governance_canister_id, nns_neuron_id).await {
         Ok(Ok(neuron)) => state::mutate(|s| {
             for vote in neuron
@@ -24,7 +31,7 @@ async fn run() {
                 .into_iter()
                 .filter_map(|b| NnsVote::try_from(b).ok())
             {
-                s.record_nns_vote(vote);
+                s.record_nns_vote(pair_id, vote);
             }
             ic_cdk::println!("Check for new NNS votes completed successfully");
         }),

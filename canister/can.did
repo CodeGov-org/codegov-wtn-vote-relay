@@ -6,4 +6,10 @@ type InitArgs = record {
   wtn_neuron_id : blob;
 };
 type InitOrUpgradeArgs = variant { Upgrade : record {}; Init : InitArgs };
-service : (InitOrUpgradeArgs) -> {}
+type RegisterNeuronPairArgs = record {
+  nns_neuron_id : nat64;
+  wtn_neuron_id : blob;
+};
+service : (InitOrUpgradeArgs) -> {
+  register_neuron_pair : (RegisterNeuronPairArgs) -> (bool);
+}
