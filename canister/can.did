@@ -1,8 +1,8 @@
 type DeregisterNeuronPairArgs = record { pair_id : nat64 };
 type InitArgs = record {
-  wtn_governance_canister_id : principal;
-  nns_governance_canister_id : principal;
-  wtn_protocol_canister_id : principal;
+  wtn_governance_canister_id : opt principal;
+  nns_governance_canister_id : opt principal;
+  wtn_protocol_canister_id : opt principal;
 };
 type InitOrUpgradeArgs = variant { Upgrade : record {}; Init : InitArgs };
 type NeuronPairPublic = record {
