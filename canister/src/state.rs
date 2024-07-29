@@ -3,7 +3,7 @@ use crate::{InitArgs, NnsVote, VoteToProcess, WtnVote};
 use ic_principal::Principal;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
-use std::collections::btree_map::Entry::Vacant;
+use std::collections::btree_map::Entry::{Occupied, Vacant};
 use std::collections::{BTreeMap, VecDeque};
 
 thread_local! {
@@ -83,6 +83,20 @@ impl State {
                 Some(id)
             }
             _ => None,
+        }
+    }
+
+    pub fn deregister_neuron_pair(&mut self, caller: Principal, pair_id: u64) -> bool {
+        match self.neuron_pairs.entry(pair_id) {
+            Occupied(e) => {
+                if e.get().admin() == caller {
+                    e.remove();
+                    true
+                } else {
+                    false
+                }
+            }
+            _ => false,
         }
     }
 

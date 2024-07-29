@@ -66,6 +66,11 @@ struct RegisterNeuronPairArgs {
     wtn_neuron_id: [u8; 32],
 }
 
+#[derive(CandidType, Serialize, Deserialize)]
+struct DeregisterNeuronPairArgs {
+    pair_id: u64,
+}
+
 #[cfg(test)]
 mod generate_candid_file {
     use crate::*;
