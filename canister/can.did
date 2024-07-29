@@ -1,9 +1,7 @@
 type InitArgs = record {
   wtn_governance_canister_id : principal;
-  nns_neuron_id : nat64;
   nns_governance_canister_id : principal;
   wtn_protocol_canister_id : principal;
-  wtn_neuron_id : blob;
 };
 type InitOrUpgradeArgs = variant { Upgrade : record {}; Init : InitArgs };
 type RegisterNeuronPairArgs = record {

@@ -20,8 +20,6 @@ pub struct InitArgs {
     pub nns_governance_canister_id: Principal,
     pub wtn_governance_canister_id: Principal,
     pub wtn_protocol_canister_id: Principal,
-    pub nns_neuron_id: u64,
-    pub wtn_neuron_id: [u8; 32],
 }
 
 #[derive(CandidType, Serialize, Deserialize, Debug, Default)]
