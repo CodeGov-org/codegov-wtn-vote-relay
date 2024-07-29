@@ -29,16 +29,19 @@ fn run() {
 
 async fn process_vote(vote: VoteToProcess) {
     match vote {
-        VoteToProcess::NnsVote(nns_vote) => {
+        VoteToProcess::NnsVote(pair_id, nns_vote) => {
             let canister_id = state::read(|s| s.wtn_protocol_canister_id());
             let response: CallResult<(Option<u64>,)> =
                 ic_cdk::call(canister_id, "get_wtn_proposal_id", (nns_vote.proposal_id,)).await;
             let vote_to_process = match response.map(|r| r.0) {
-                Ok(Some(wtn_proposal_id)) => Some(VoteToProcess::PendingWtnVote(WtnVote {
-                    nns_proposal_id: nns_vote.proposal_id,
-                    wtn_proposal_id,
-                    adopt: nns_vote.adopt,
-                })),
+                Ok(Some(wtn_proposal_id)) => Some(VoteToProcess::PendingWtnVote(
+                    pair_id,
+                    WtnVote {
+                        nns_proposal_id: nns_vote.proposal_id,
+                        wtn_proposal_id,
+                        adopt: nns_vote.adopt,
+                    },
+                )),
                 Ok(None) => {
                     ic_cdk::println!(
                         "No WTN proposal found for NNS proposal {}",
@@ -48,16 +51,20 @@ async fn process_vote(vote: VoteToProcess) {
                 }
                 Err(error) => {
                     ic_cdk::eprintln!("Error calling `get_wtn_proposal_id`: {error:?}");
-                    Some(VoteToProcess::NnsVote(nns_vote))
+                    Some(VoteToProcess::NnsVote(pair_id, nns_vote))
                 }
             };
             if let Some(vote) = vote_to_process {
                 state::mutate(|s| s.push_vote_to_process(vote));
             }
         }
-        VoteToProcess::PendingWtnVote(wtn_vote) => {
-            let (canister_id, neuron_id) =
-                state::read(|s| (s.wtn_governance_canister_id(), s.wtn_neuron_id()));
+        VoteToProcess::PendingWtnVote(pair_id, wtn_vote) => {
+            let Some((canister_id, neuron_id)) = state::read(|s| {
+                s.neuron_pair(pair_id)
+                    .map(|p| (s.wtn_governance_canister_id(), p.wtn_neuron_id()))
+            }) else {
+                return;
+            };
             let args = ManageNeuronArgs {
                 subaccount: neuron_id.to_vec(),
                 command: Some(Command::RegisterVote(RegisterVote {
@@ -72,9 +79,9 @@ async fn process_vote(vote: VoteToProcess) {
             state::mutate(|s| {
                 if let Err(error) = response {
                     ic_cdk::eprintln!("Error calling `manage_neuron`: {error:?}");
-                    s.push_vote_to_process(VoteToProcess::PendingWtnVote(wtn_vote));
+                    s.push_vote_to_process(VoteToProcess::PendingWtnVote(pair_id, wtn_vote));
                 } else {
-                    s.record_wtn_vote_registered(wtn_vote);
+                    s.record_wtn_vote_registered(pair_id, wtn_vote);
                 }
             });
         }
