@@ -5,11 +5,18 @@ type InitArgs = record {
   wtn_protocol_canister_id : principal;
 };
 type InitOrUpgradeArgs = variant { Upgrade : record {}; Init : InitArgs };
+type NeuronPairPublic = record {
+  id : nat64;
+  admin : principal;
+  nns_neuron_id : nat64;
+  wtn_neuron_id : blob;
+};
 type RegisterNeuronPairArgs = record {
   nns_neuron_id : nat64;
   wtn_neuron_id : blob;
 };
 service : (InitOrUpgradeArgs) -> {
   deregister_neuron_pair : (DeregisterNeuronPairArgs) -> (bool);
+  list_neuron_pairs : () -> (vec NeuronPairPublic);
   register_neuron_pair : (RegisterNeuronPairArgs) -> (opt nat64);
 }

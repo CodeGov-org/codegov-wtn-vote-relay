@@ -1,5 +1,5 @@
 use crate::neuron_pair::NeuronPair;
-use crate::{InitArgs, NnsVote, VoteToProcess, WtnVote};
+use crate::{InitArgs, NeuronPairPublic, NnsVote, VoteToProcess, WtnVote};
 use ic_principal::Principal;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
@@ -67,6 +67,10 @@ impl State {
 
     pub fn wtn_protocol_canister_id(&self) -> Principal {
         self.wtn_protocol_canister_id
+    }
+
+    pub fn list_neuron_pairs(&self) -> Vec<NeuronPairPublic> {
+        self.neuron_pairs.values().map(|p| p.into()).collect()
     }
 
     pub fn register_neuron_pair(

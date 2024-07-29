@@ -1,4 +1,4 @@
-use crate::WtnVote;
+use crate::{NeuronPairPublic, WtnVote};
 use candid::Deserialize;
 use ic_principal::Principal;
 use serde::Serialize;
@@ -71,5 +71,16 @@ impl NeuronPair {
         let mut u64_bytes = [0u8; 8];
         u64_bytes[..bytes.len()].copy_from_slice(bytes);
         u64::from_be_bytes(u64_bytes)
+    }
+}
+
+impl From<&NeuronPair> for NeuronPairPublic {
+    fn from(value: &NeuronPair) -> Self {
+        NeuronPairPublic {
+            id: value.id,
+            admin: value.admin,
+            nns_neuron_id: value.nns_neuron_id,
+            wtn_neuron_id: value.wtn_neuron_id,
+        }
     }
 }
