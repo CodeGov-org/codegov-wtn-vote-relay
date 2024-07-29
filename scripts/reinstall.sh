@@ -1,3 +1,3 @@
 #!/bin/bash
 dfx build --ic codegov-wtn-vote-relay
-dfx canister --ic install codegov-wtn-vote-relay --mode reinstall --argument '(variant { Init = record { wtn_governance_canister_id = principal "jfnic-kaaaa-aaaaq-aadla-cai"; nns_neuron_id = 2_649_066_124_191_664_356 : nat64; nns_governance_canister_id = principal "rrkah-fqaaa-aaaaa-aaaaq-cai"; wtn_protocol_canister_id = principal "tsbvt-pyaaa-aaaar-qafva-cai"; wtn_neuron_id = blob "\20\33\12\48\0b\4a\ee\f8\77\f3\93\f3\76\53\3f\4f\dc\aa\47\74\12\ca\1a\e8\3a\bd\8e\89\7c\0e\72\6f"; }})'
+dfx canister --ic install codegov-wtn-vote-relay --mode reinstall --argument '(variant { Init = record { }})'
