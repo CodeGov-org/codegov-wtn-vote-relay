@@ -6,6 +6,13 @@ use std::cell::RefCell;
 use std::collections::btree_map::Entry::{Occupied, Vacant};
 use std::collections::{BTreeMap, VecDeque};
 
+const DEFAULT_NNS_GOVERNANCE_CANISTER_ID: Principal =
+    Principal::from_slice(&[0, 0, 0, 0, 0, 0, 0, 1, 1, 1]);
+const DEFAULT_WTN_GOVERNANCE_CANISTER_ID: Principal =
+    Principal::from_slice(&[0, 0, 0, 0, 2, 0, 0, 214, 1, 1]);
+const DEFAULT_WTN_PROTOCOL_CANISTER_ID: Principal =
+    Principal::from_slice(&[0, 0, 0, 0, 2, 48, 1, 106, 1, 1]);
+
 thread_local! {
     static STATE: RefCell<Option<State>> = RefCell::default();
 }
@@ -49,9 +56,15 @@ pub fn take() -> State {
 impl State {
     pub fn new(args: InitArgs) -> State {
         State {
-            nns_governance_canister_id: args.nns_governance_canister_id,
-            wtn_governance_canister_id: args.wtn_governance_canister_id,
-            wtn_protocol_canister_id: args.wtn_protocol_canister_id,
+            nns_governance_canister_id: args
+                .nns_governance_canister_id
+                .unwrap_or(DEFAULT_NNS_GOVERNANCE_CANISTER_ID),
+            wtn_governance_canister_id: args
+                .wtn_governance_canister_id
+                .unwrap_or(DEFAULT_WTN_GOVERNANCE_CANISTER_ID),
+            wtn_protocol_canister_id: args
+                .wtn_protocol_canister_id
+                .unwrap_or(DEFAULT_WTN_PROTOCOL_CANISTER_ID),
             neuron_pairs: BTreeMap::new(),
             votes_to_process: VecDeque::new(),
         }
@@ -139,5 +152,26 @@ impl State {
 
     pub fn votes_to_process_count(&self) -> usize {
         self.votes_to_process.len()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn canister_ids() {
+        assert_eq!(
+            DEFAULT_NNS_GOVERNANCE_CANISTER_ID,
+            Principal::from_text("rrkah-fqaaa-aaaaa-aaaaq-cai").unwrap()
+        );
+        assert_eq!(
+            DEFAULT_WTN_GOVERNANCE_CANISTER_ID,
+            Principal::from_text("jfnic-kaaaa-aaaaq-aadla-cai").unwrap()
+        );
+        assert_eq!(
+            DEFAULT_WTN_PROTOCOL_CANISTER_ID,
+            Principal::from_text("tsbvt-pyaaa-aaaar-qafva-cai").unwrap()
+        );
     }
 }

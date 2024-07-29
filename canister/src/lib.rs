@@ -11,30 +11,30 @@ mod state;
 mod updates;
 
 #[derive(CandidType, Serialize, Deserialize, Debug)]
-pub enum InitOrUpgradeArgs {
+enum InitOrUpgradeArgs {
     Init(InitArgs),
     Upgrade(UpgradeArgs),
 }
 
 #[derive(CandidType, Serialize, Deserialize, Debug)]
-pub struct InitArgs {
-    pub nns_governance_canister_id: Principal,
-    pub wtn_governance_canister_id: Principal,
-    pub wtn_protocol_canister_id: Principal,
+struct InitArgs {
+    nns_governance_canister_id: Option<Principal>,
+    wtn_governance_canister_id: Option<Principal>,
+    wtn_protocol_canister_id: Option<Principal>,
 }
 
 #[derive(CandidType, Serialize, Deserialize, Debug, Default)]
-pub struct UpgradeArgs {}
+struct UpgradeArgs {}
 
 impl InitOrUpgradeArgs {
-    pub fn to_init_args(self) -> InitArgs {
+    fn to_init_args(self) -> InitArgs {
         let InitOrUpgradeArgs::Init(args) = self else {
             panic!("InitOrUpgradeArgs not of type Init");
         };
         args
     }
 
-    pub fn to_upgrade_args(self) -> UpgradeArgs {
+    fn to_upgrade_args(self) -> UpgradeArgs {
         let InitOrUpgradeArgs::Upgrade(args) = self else {
             panic!("InitOrUpgradeArgs not of type Upgrade");
         };
