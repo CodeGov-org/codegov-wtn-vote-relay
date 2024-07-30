@@ -17,6 +17,6 @@ type RegisterNeuronPairArgs = record {
 };
 service : (InitOrUpgradeArgs) -> {
   deregister_neuron_pair : (DeregisterNeuronPairArgs) -> (bool);
-  list_neuron_pairs : () -> (vec NeuronPairPublic);
+  list_neuron_pairs : () -> (vec NeuronPairPublic) query;
   register_neuron_pair : (RegisterNeuronPairArgs) -> (opt nat64);
 }
