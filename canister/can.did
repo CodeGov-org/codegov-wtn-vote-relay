@@ -8,10 +8,12 @@ type InitOrUpgradeArgs = variant { Upgrade : record {}; Init : InitArgs };
 type NeuronPairPublic = record {
   id : nat64;
   admin : principal;
+  name : text;
   nns_neuron_id : nat64;
   wtn_neuron_id : blob;
 };
 type RegisterNeuronPairArgs = record {
+  name : text;
   nns_neuron_id : nat64;
   wtn_neuron_id : blob;
 };

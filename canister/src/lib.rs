@@ -63,6 +63,7 @@ struct WtnVote {
 
 #[derive(CandidType, Serialize, Deserialize)]
 struct RegisterNeuronPairArgs {
+    name: String,
     nns_neuron_id: u64,
     wtn_neuron_id: [u8; 32],
 }
@@ -75,6 +76,7 @@ struct DeregisterNeuronPairArgs {
 #[derive(CandidType, Serialize, Deserialize, Debug)]
 struct NeuronPairPublic {
     id: u64,
+    name: String,
     admin: Principal,
     nns_neuron_id: u64,
     wtn_neuron_id: [u8; 32],
