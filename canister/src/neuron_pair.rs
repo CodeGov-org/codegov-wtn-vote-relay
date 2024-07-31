@@ -7,6 +7,7 @@ use std::collections::BTreeSet;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct NeuronPair {
     id: u64,
+    name: String,
     admin: Principal,
     nns_neuron_id: u64,
     wtn_neuron_id: [u8; 32],
@@ -15,7 +16,12 @@ pub struct NeuronPair {
 }
 
 impl NeuronPair {
-    pub fn new(admin: Principal, nns_neuron_id: u64, wtn_neuron_id: [u8; 32]) -> NeuronPair {
+    pub fn new(
+        name: String,
+        admin: Principal,
+        nns_neuron_id: u64,
+        wtn_neuron_id: [u8; 32],
+    ) -> NeuronPair {
         let mut bytes = Vec::new();
         bytes.extend(admin.as_slice());
         bytes.extend(nns_neuron_id.to_be_bytes());
@@ -24,6 +30,7 @@ impl NeuronPair {
 
         NeuronPair {
             id,
+            name,
             admin,
             nns_neuron_id,
             wtn_neuron_id,
@@ -78,6 +85,7 @@ impl From<&NeuronPair> for NeuronPairPublic {
     fn from(value: &NeuronPair) -> Self {
         NeuronPairPublic {
             id: value.id,
+            name: value.name.clone(),
             admin: value.admin,
             nns_neuron_id: value.nns_neuron_id,
             wtn_neuron_id: value.wtn_neuron_id,
