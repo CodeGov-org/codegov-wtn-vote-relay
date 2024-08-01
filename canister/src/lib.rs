@@ -69,6 +69,14 @@ struct RegisterNeuronPairArgs {
 }
 
 #[derive(CandidType, Serialize, Deserialize)]
+enum RegisterNeuronPairError {
+    AlreadyRegistered,
+    NotPermittedToVote,
+    GovernanceError(i32, String),
+    ErrorCallingGovernanceCanister(i32, String),
+}
+
+#[derive(CandidType, Serialize, Deserialize)]
 struct DeregisterNeuronPairArgs {
     pair_id: u64,
 }
