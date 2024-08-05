@@ -71,7 +71,7 @@ async fn process_vote(vote: VoteToProcess) {
                     proposal: Some(ProposalId {
                         id: wtn_vote.wtn_proposal_id,
                     }),
-                    vote: if wtn_vote.adopt { 1 } else { -1 },
+                    vote: if wtn_vote.adopt { 1 } else { 2 },
                 })),
             };
             let response: CallResult<()> =
