@@ -14,12 +14,17 @@ deregister your pair. It is recommended to set your WTN neuron ID as a Followee 
 Proposals" in order to prevent your Followee for "All Non-Critical Topics" from voting before your preferred NNS neuron
 votes for you on this topic.
 
-Clone Vote Relay Repo: If you can run command line and have DFX installed, then create a directory where you want to
-clone the git repo for the vote relay app. Change to that directory and run the following command...
+## Computer prerequesites:
+You must be able to execute commands in a command line terminal and you must have any version of DFX installed.
+
+## Clone Vote Relay Repo:
+If you can run command line and have DFX installed, then create a directory where you want to clone the git repo for 
+the vote relay app. Change to that directory and run the following command...
 
 `git clone https://github.com/CodeGov-org/codegov-wtn-vote-relay.git`
 
-Set Hotkey: Decide which NNS neuron ID and WTN neuron ID pair you want to configure for vote following. It can be any
+## Set Hotkey: 
+Decide which NNS neuron ID and WTN neuron ID pair you want to configure for vote following. It can be any
 NNS neuron you trust (including your own neuron or any known neuron). However, you must be able to control the WTN
 neuron in order for this pairing to work because you must set the vote relay canister ID as a hotkey for your WTN
 neuron. The CodeGov vote relay canister ID is e5khx-vyaaa-aaaar-qagja-cai. Set the hotkey for your WTN neuron before
@@ -28,17 +33,20 @@ for NNS Proposals". If you don't do this, then is it possible that your Followee
 before your preferred NNS neuron votes on this topic. Setting a neuron to follow itself on a specific topic is the only
 way to ensure that your Followee selection for the All Topics catch all doesn't vote for you on that topic.
 
-Register_Neuron_Pair: Change directory in your command line terminal to the folder called codegov-wtn-vote-relay, which
-was created when you cloned the repo. Run the following command from within this folder and then follow the directions
-when prompted.
+Here is the vote relay canister ID again for ease of copy...
+`e5khx-vyaaa-aaaar-qagja-cai`
+
+## Register_Neuron_Pair: 
+Change directory in your command line terminal to the folder called codegov-wtn-vote-relay, which was created when you 
+cloned the repo. Run the following command from within this folder and then follow the directions when prompted.
 
 `dfx canister --ic call codegov-wtn-vote-relay register_neuron_pair`
 
 Below is the example from when the CodeGov NNS / WTN neuron pair was registered...
 
+```
 This method requires arguments.
 
-```
 Enter a value for RegisterNeuronPairArgs : record { name : text; nns_neuron_id : nat64; wtn_neuron_id : blob }
 Enter field name : text
 ✔ Enter a text (type :e to use editor) · CodeGov
@@ -66,8 +74,9 @@ When prompted to enter the WTN neuron ID, you will first be asked if you want to
 If you failed to enter the hotkey, then the variant will show `Err=variant{NotPermittedToVote}`. This means the
 registration failed.
 
-List_Neuron_Pairs: You can verify that your NNS / WTN neuron pair is registered by running the list_neuron_pairs command
-below. If you see your pair, then the registration was successful.
+## List_Neuron_Pairs: 
+You can verify that your NNS / WTN neuron pair is registered by running the list_neuron_pairs command below. If you see 
+your pair, then the registration was successful.
 
 `dfx canister --ic call codegov-wtn-vote-relay list_neuron_pairs`
 
@@ -101,7 +110,8 @@ This is an example of the output of this command...
 )
 ```
 
-Deregister_Neuron_Pair: If you want to delete a neuron pair that you added, then it can be done with the command below.
+## Deregister_Neuron_Pair: 
+If you want to delete a neuron pair that you added, then it can be done with the command below.
 
 `dfx canister --ic call codegov-wtn-vote-relay deregister_neuron_pair`
 
