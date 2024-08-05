@@ -14,7 +14,7 @@ deregister your pair. It is recommended to set your WTN neuron ID as a Followee 
 Proposals" in order to prevent your Followee for "All Non-Critical Topics" from voting before your preferred NNS neuron
 votes for you on this topic.
 
-## Computer prerequesites:
+## Prerequisites:
 You must be able to execute commands in a command line terminal and you must have any version of DFX installed.
 
 ## Clone Vote Relay Repo:
