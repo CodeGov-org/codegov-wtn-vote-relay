@@ -9,7 +9,7 @@ a known neuron, or any other neuron) to vote on the corresponding WTN proposal. 
 pair, you must be able to set the vote relay canister ID as a hotkey for the WTN neuron. Hence, you must be able to
 control the WTN neuron. The app provides prompts for setting up the pairs and it has error checking to verify that the
 setup is successful. You can also list all neuron pairs to verify that your pair was successful. There is a deregister
-command that can only be performed by the sample principle that set the original configuration. That way nobody can
+command that can only be performed by the same principal that set the original configuration. That way nobody can
 deregister your pair. It is recommended to set your WTN neuron ID as a Followee for the proposal topic "Vote for NNS
 Proposals" in order to prevent your Followee for "All Non-Critical Topics" from voting before your preferred NNS neuron
 votes for you on this topic.
