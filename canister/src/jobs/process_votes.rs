@@ -3,6 +3,7 @@ use crate::{state, VoteToProcess, WtnVote};
 use candid::CandidType;
 use ic_cdk::api::call::CallResult;
 use ic_cdk_timers::TimerId;
+use ic_principal::Principal;
 use serde::{Deserialize, Serialize};
 use std::cell::Cell;
 use std::time::Duration;
@@ -31,23 +32,26 @@ async fn process_vote(vote: VoteToProcess) {
     match vote {
         VoteToProcess::NnsVote(pair_id, nns_vote) => {
             let canister_id = state::read(|s| s.wtn_protocol_canister_id());
-            let response: CallResult<(Option<u64>,)> =
-                ic_cdk::call(canister_id, "get_wtn_proposal_id", (nns_vote.proposal_id,)).await;
-            let vote_to_process = match response.map(|r| r.0) {
-                Ok(Some(wtn_proposal_id)) => Some(VoteToProcess::PendingWtnVote(
+            let response = get_wtn_proposal_id(canister_id, nns_vote.proposal_id).await;
+            let vote_to_process = match response {
+                Ok(Ok(wtn_proposal_id)) => Some(VoteToProcess::PendingWtnVote(
                     pair_id,
                     WtnVote {
                         nns_proposal_id: nns_vote.proposal_id,
-                        wtn_proposal_id,
+                        wtn_proposal_id: wtn_proposal_id.id,
                         adopt: nns_vote.adopt,
                     },
                 )),
-                Ok(None) => {
-                    ic_cdk::println!(
-                        "No WTN proposal found for NNS proposal {}",
-                        nns_vote.proposal_id
-                    );
-                    None
+                Ok(Err(latest_processed_nns_proposal_id)) => {
+                    if latest_processed_nns_proposal_id.id >= nns_vote.proposal_id {
+                        ic_cdk::println!(
+                            "No WTN proposal found for NNS proposal {}",
+                            nns_vote.proposal_id
+                        );
+                        None
+                    } else {
+                        Some(VoteToProcess::NnsVote(pair_id, nns_vote))
+                    }
                 }
                 Err(error) => {
                     ic_cdk::eprintln!("Error calling `get_wtn_proposal_id`: {error:?}");
@@ -88,6 +92,16 @@ async fn process_vote(vote: VoteToProcess) {
     }
 
     state::read(start_job_if_required);
+}
+
+async fn get_wtn_proposal_id(
+    canister_id: Principal,
+    nns_proposal_id: u64,
+) -> CallResult<Result<ProposalId, ProposalId>> {
+    let response: CallResult<(Result<ProposalId, ProposalId>,)> =
+        ic_cdk::call(canister_id, "get_wtn_proposal_id", (nns_proposal_id,)).await;
+
+    response.map(|r| r.0)
 }
 
 #[derive(CandidType, Serialize, Deserialize)]
