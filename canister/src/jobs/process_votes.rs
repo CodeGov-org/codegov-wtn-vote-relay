@@ -50,6 +50,8 @@ async fn process_vote(vote: VoteToProcess) {
                         );
                         None
                     } else {
+                        // The WTN canister hasn't processed this NNS proposal yet, so put the NNS
+                        // proposal back in the queue for it to be attempted again shortly
                         Some(VoteToProcess::NnsVote(pair_id, nns_vote))
                     }
                 }
