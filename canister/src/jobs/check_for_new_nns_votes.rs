@@ -20,23 +20,35 @@ async fn run() {
             .collect()
     });
 
-    futures::future::join_all(futures).await;
+    let results = futures::future::join_all(futures).await;
+
+    let succeeded: usize = results.iter().filter(|success| **success).count();
+    let failed = results.len() - succeeded;
+
+    ic_cdk::println!("Check for new NNS votes completed. Succeeded: {succeeded}. Failed: {failed}");
 }
 
-async fn run_single(pair_id: u64, nns_governance_canister_id: Principal, nns_neuron_id: u64) {
+async fn run_single(
+    pair_id: u64,
+    nns_governance_canister_id: Principal,
+    nns_neuron_id: u64,
+) -> bool {
     match get_neuron_info(nns_governance_canister_id, nns_neuron_id).await {
-        Ok(Ok(neuron)) => state::mutate(|s| {
-            for vote in neuron
-                .recent_ballots
-                .into_iter()
-                .filter_map(|b| NnsVote::try_from(b).ok())
-            {
-                s.record_nns_vote(pair_id, vote);
-            }
-            ic_cdk::println!("Check for new NNS votes completed successfully");
-        }),
+        Ok(Ok(neuron)) => {
+            state::mutate(|s| {
+                for vote in neuron
+                    .recent_ballots
+                    .into_iter()
+                    .filter_map(|b| NnsVote::try_from(b).ok())
+                {
+                    s.record_nns_vote(pair_id, vote);
+                }
+            });
+            true
+        }
         error => {
-            ic_cdk::eprintln!("Error calling `get_neuron_info`: {error:?}")
+            ic_cdk::eprintln!("Error calling `get_neuron_info`: {error:?}");
+            false
         }
     }
 }
