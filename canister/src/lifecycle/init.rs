@@ -1,3 +1,4 @@
+use crate::logs::log;
 use crate::state::State;
 use crate::InitOrUpgradeArgs;
 use ic_cdk::init;
@@ -10,5 +11,5 @@ fn init(args: InitOrUpgradeArgs) {
     crate::jobs::start_jobs(&state);
     crate::state::init(state);
 
-    ic_cdk::println!("Canister initialized");
+    log("Canister initialized");
 }

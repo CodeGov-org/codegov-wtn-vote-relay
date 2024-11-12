@@ -27,5 +27,6 @@ type Result = variant { Ok : nat64; Err : RegisterNeuronPairError };
 service : (InitOrUpgradeArgs) -> {
   deregister_neuron_pair : (DeregisterNeuronPairArgs) -> (bool);
   list_neuron_pairs : () -> (vec NeuronPairPublic) query;
+  logs : () -> (vec text) query;
   register_neuron_pair : (RegisterNeuronPairArgs) -> (Result);
 }
