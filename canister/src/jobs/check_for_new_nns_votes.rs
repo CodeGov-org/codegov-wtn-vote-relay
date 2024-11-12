@@ -13,7 +13,7 @@ pub fn start_job() {
 }
 
 async fn run() {
-    log(format!("Checking for new NNS votes"));
+    log("Checking for new NNS votes");
 
     let futures: Vec<_> = state::mutate(|s| {
         s.iter_neuron_pairs()
