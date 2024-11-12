@@ -1,3 +1,4 @@
+use crate::logs::log;
 use crate::{state, NnsVote};
 use candid::CandidType;
 use ic_cdk::api::call::CallResult;
@@ -12,7 +13,7 @@ pub fn start_job() {
 }
 
 async fn run() {
-    ic_cdk::println!("Checking for new NNS votes");
+    log(format!("Checking for new NNS votes"));
 
     let futures: Vec<_> = state::mutate(|s| {
         s.iter_neuron_pairs()
@@ -25,7 +26,9 @@ async fn run() {
     let succeeded: usize = results.iter().filter(|success| **success).count();
     let failed = results.len() - succeeded;
 
-    ic_cdk::println!("Check for new NNS votes completed. Succeeded: {succeeded}. Failed: {failed}");
+    log(format!(
+        "Check for new NNS votes completed. Succeeded: {succeeded}. Failed: {failed}"
+    ));
 }
 
 async fn run_single(

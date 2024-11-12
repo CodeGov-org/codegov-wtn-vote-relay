@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 
 mod jobs;
 mod lifecycle;
+mod logs;
 mod memory;
 mod neuron_pair;
 mod queries;

@@ -1,3 +1,4 @@
+use crate::logs::log;
 use crate::state::State;
 use crate::{state, VoteToProcess, WtnVote};
 use candid::CandidType;
@@ -21,14 +22,14 @@ pub(crate) fn start_job_if_required(state: &State) {
 
 fn run() {
     TIMER_ID.set(None);
-
     if let Some(vote) = state::mutate(|s| s.pop_next_vote_to_process()) {
-        ic_cdk::println!("Processing vote: {vote:?}");
         ic_cdk::spawn(process_vote(vote));
     }
 }
 
 async fn process_vote(vote: VoteToProcess) {
+    log(format!("Processing vote: {vote:?}"));
+
     match vote {
         VoteToProcess::NnsVote(pair_id, nns_vote) => {
             let canister_id = state::read(|s| s.wtn_protocol_canister_id());
@@ -44,14 +45,19 @@ async fn process_vote(vote: VoteToProcess) {
                 )),
                 Ok(Err(latest_processed_nns_proposal_id)) => {
                     if latest_processed_nns_proposal_id.id >= nns_vote.proposal_id {
-                        ic_cdk::println!(
+                        log(format!(
                             "No WTN proposal found for NNS proposal {}",
                             nns_vote.proposal_id
-                        );
+                        ));
                         None
                     } else {
                         // The WTN canister hasn't processed this NNS proposal yet, so put the NNS
                         // proposal back in the queue for it to be attempted again shortly
+                        log(format!(
+                            "WTN canister has not processed NNS proposal yet. ProposalId: {}. Latest processed: {}",
+                            nns_vote.proposal_id,
+                            latest_processed_nns_proposal_id.id
+                        ));
                         Some(VoteToProcess::NnsVote(pair_id, nns_vote))
                     }
                 }
