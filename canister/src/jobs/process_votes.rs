@@ -32,38 +32,69 @@ async fn process_vote(vote: VoteToProcess) {
 
     match vote {
         VoteToProcess::NnsVote(pair_id, nns_vote) => {
-            let canister_id = state::read(|s| s.wtn_protocol_canister_id());
-            let response = get_wtn_proposal_id(canister_id, nns_vote.proposal_id).await;
-            let vote_to_process = match response {
-                Ok(Ok(wtn_proposal_id)) => Some(VoteToProcess::PendingWtnVote(
+            let vote_to_process = match state::read(|s| {
+                s.get_cached_wtn_proposal_for_nns_proposal(nns_vote.proposal_id)
+            }) {
+                Some(Some(wtn_proposal_id)) => Some(VoteToProcess::PendingWtnVote(
                     pair_id,
                     WtnVote {
                         nns_proposal_id: nns_vote.proposal_id,
-                        wtn_proposal_id: wtn_proposal_id.id,
+                        wtn_proposal_id,
                         adopt: nns_vote.adopt,
                     },
                 )),
-                Ok(Err(latest_processed_nns_proposal_id)) => {
-                    if latest_processed_nns_proposal_id.id >= nns_vote.proposal_id {
-                        log(format!(
-                            "No WTN proposal found for NNS proposal {}",
-                            nns_vote.proposal_id
-                        ));
-                        None
-                    } else {
-                        // The WTN canister hasn't processed this NNS proposal yet, so put the NNS
-                        // proposal back in the queue for it to be attempted again shortly
-                        log(format!(
-                            "WTN canister has not processed NNS proposal yet. ProposalId: {}. Latest processed: {}",
-                            nns_vote.proposal_id,
-                            latest_processed_nns_proposal_id.id
-                        ));
-                        Some(VoteToProcess::NnsVote(pair_id, nns_vote))
+                Some(None) => None,
+                None => {
+                    // Didn't find the WTN proposal in the cache, so call
+                    // into WTN canister to retrieve it
+                    let canister_id = state::read(|s| s.wtn_protocol_canister_id());
+                    let response = get_wtn_proposal_id(canister_id, nns_vote.proposal_id).await;
+                    match response {
+                        Ok(Ok(wtn_proposal_id)) => {
+                            state::mutate(|s| {
+                                s.record_wtn_proposal_for_nns_proposal(
+                                    nns_vote.proposal_id,
+                                    Some(wtn_proposal_id.id),
+                                )
+                            });
+                            Some(VoteToProcess::PendingWtnVote(
+                                pair_id,
+                                WtnVote {
+                                    nns_proposal_id: nns_vote.proposal_id,
+                                    wtn_proposal_id: wtn_proposal_id.id,
+                                    adopt: nns_vote.adopt,
+                                },
+                            ))
+                        }
+                        Ok(Err(latest_processed_nns_proposal_id)) => {
+                            if latest_processed_nns_proposal_id.id >= nns_vote.proposal_id {
+                                state::mutate(|s| {
+                                    s.record_wtn_proposal_for_nns_proposal(
+                                        nns_vote.proposal_id,
+                                        None,
+                                    )
+                                });
+                                log(format!(
+                                    "No WTN proposal found for NNS proposal {}",
+                                    nns_vote.proposal_id
+                                ));
+                                None
+                            } else {
+                                // The WTN canister hasn't processed this NNS proposal yet, so put the NNS
+                                // proposal back in the queue for it to be attempted again shortly
+                                log(format!(
+                                    "WTN canister has not processed NNS proposal yet. ProposalId: {}. Latest processed: {}",
+                                    nns_vote.proposal_id,
+                                    latest_processed_nns_proposal_id.id
+                                ));
+                                Some(VoteToProcess::NnsVote(pair_id, nns_vote))
+                            }
+                        }
+                        Err(error) => {
+                            ic_cdk::eprintln!("Error calling `get_wtn_proposal_id`: {error:?}");
+                            Some(VoteToProcess::NnsVote(pair_id, nns_vote))
+                        }
                     }
-                }
-                Err(error) => {
-                    ic_cdk::eprintln!("Error calling `get_wtn_proposal_id`: {error:?}");
-                    Some(VoteToProcess::NnsVote(pair_id, nns_vote))
                 }
             };
             if let Some(vote) = vote_to_process {

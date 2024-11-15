@@ -25,6 +25,8 @@ pub struct State {
     wtn_protocol_canister_id: Principal,
     neuron_pairs: BTreeMap<u64, NeuronPair>,
     votes_to_process: VecDeque<VoteToProcess>,
+    #[serde(default)]
+    cached_wtn_proposals_per_nns_proposal: BTreeMap<u64, Option<u64>>,
 }
 
 const STATE_ALREADY_INITIALIZED: &str = "State has already been initialized";
@@ -66,6 +68,7 @@ impl State {
                 .unwrap_or(DEFAULT_WTN_PROTOCOL_CANISTER_ID),
             neuron_pairs: BTreeMap::new(),
             votes_to_process: VecDeque::new(),
+            cached_wtn_proposals_per_nns_proposal: BTreeMap::new(),
         }
     }
 
@@ -152,6 +155,28 @@ impl State {
 
     pub fn votes_to_process_count(&self) -> usize {
         self.votes_to_process.len()
+    }
+
+    pub fn record_wtn_proposal_for_nns_proposal(
+        &mut self,
+        nns_proposal_id: u64,
+        wtn_proposal_id: Option<u64>,
+    ) {
+        self.cached_wtn_proposals_per_nns_proposal
+            .insert(nns_proposal_id, wtn_proposal_id);
+
+        while self.cached_wtn_proposals_per_nns_proposal.len() > 500 {
+            self.cached_wtn_proposals_per_nns_proposal.pop_first();
+        }
+    }
+
+    pub fn get_cached_wtn_proposal_for_nns_proposal(
+        &self,
+        nns_proposal_id: u64,
+    ) -> Option<Option<u64>> {
+        self.cached_wtn_proposals_per_nns_proposal
+            .get(&nns_proposal_id)
+            .copied()
     }
 }
 
