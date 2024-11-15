@@ -18,7 +18,7 @@ pub fn log<S: AsRef<str>>(s: S) {
         let now = ic_cdk::api::time() / 1_000_000;
         logs.push_back(format!("{now}: {message}"));
 
-        while logs.len() > 1000 {
+        while logs.len() > 5000 {
             logs.pop_front();
         }
     })
