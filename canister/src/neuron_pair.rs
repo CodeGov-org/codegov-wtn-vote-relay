@@ -4,6 +4,8 @@ use ic_principal::Principal;
 use serde::Serialize;
 use std::collections::BTreeSet;
 
+const MAX_NAME_LEN: usize = 100;
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct NeuronPair {
     id: u64,
@@ -17,11 +19,13 @@ pub struct NeuronPair {
 
 impl NeuronPair {
     pub fn new(
-        name: String,
+        mut name: String,
         admin: Principal,
         nns_neuron_id: u64,
         wtn_neuron_id: [u8; 32],
     ) -> NeuronPair {
+        name.truncate(MAX_NAME_LEN);
+
         let mut bytes = Vec::new();
         bytes.extend(admin.as_slice());
         bytes.extend(nns_neuron_id.to_be_bytes());
