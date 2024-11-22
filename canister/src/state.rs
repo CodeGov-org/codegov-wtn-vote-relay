@@ -1,6 +1,6 @@
 use crate::logs::log;
 use crate::neuron_pair::NeuronPair;
-use crate::{InitArgs, NeuronPairPublic, NnsVote, VoteToProcess, WtnVote};
+use crate::{InitArgs, NnsVote, VoteToProcess, WtnVote};
 use ic_principal::Principal;
 use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
@@ -84,10 +84,6 @@ impl State {
         self.wtn_protocol_canister_id
     }
 
-    pub fn list_neuron_pairs(&self) -> Vec<NeuronPairPublic> {
-        self.neuron_pairs.values().map(|p| p.into()).collect()
-    }
-
     pub fn register_neuron_pair(
         &mut self,
         caller: Principal,
@@ -120,12 +116,8 @@ impl State {
         }
     }
 
-    pub fn neuron_pair(&self, pair_id: u64) -> Option<&NeuronPair> {
-        self.neuron_pairs.get(&pair_id)
-    }
-
-    pub fn iter_neuron_pairs(&self) -> impl Iterator<Item = &NeuronPair> {
-        self.neuron_pairs.values()
+    pub fn neuron_pairs(&self) -> &BTreeMap<u64, NeuronPair> {
+        &self.neuron_pairs
     }
 
     pub fn record_nns_vote(&mut self, pair_id: u64, vote: NnsVote) {

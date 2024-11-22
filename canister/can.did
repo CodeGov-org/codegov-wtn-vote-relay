@@ -21,6 +21,7 @@ type RegisterNeuronPairError = variant {
   ErrorCallingGovernanceCanister : record { int32; text };
   NotPermittedToVote;
   AlreadyRegistered;
+  RegistrationLimitExceeded : nat32;
   GovernanceError : record { int32; text };
 };
 type Result = variant { Ok : nat64; Err : RegisterNeuronPairError };

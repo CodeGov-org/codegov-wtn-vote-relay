@@ -16,7 +16,8 @@ async fn run() {
     log("Checking for new NNS votes");
 
     let futures: Vec<_> = state::mutate(|s| {
-        s.iter_neuron_pairs()
+        s.neuron_pairs()
+            .values()
             .map(|p| run_single(p.id(), s.nns_governance_canister_id(), p.nns_neuron_id()))
             .collect()
     });

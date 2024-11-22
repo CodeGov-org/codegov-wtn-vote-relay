@@ -73,6 +73,7 @@ struct RegisterNeuronPairArgs {
 enum RegisterNeuronPairError {
     AlreadyRegistered,
     NotPermittedToVote,
+    RegistrationLimitExceeded(u32),
     GovernanceError(i32, String),
     ErrorCallingGovernanceCanister(i32, String),
 }

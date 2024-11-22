@@ -103,7 +103,8 @@ async fn process_vote(vote: VoteToProcess) {
         }
         VoteToProcess::PendingWtnVote(pair_id, wtn_vote) => {
             let Some((canister_id, neuron_id)) = state::read(|s| {
-                s.neuron_pair(pair_id)
+                s.neuron_pairs()
+                    .get(&pair_id)
                     .map(|p| (s.wtn_governance_canister_id(), p.wtn_neuron_id()))
             }) else {
                 return;

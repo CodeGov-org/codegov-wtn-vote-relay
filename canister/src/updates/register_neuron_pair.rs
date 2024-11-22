@@ -6,13 +6,19 @@ use ic_principal::Principal;
 use serde::{Deserialize, Serialize};
 
 const REGISTER_VOTE_PERMISSION: i32 = 4;
+const REGISTRATIONS_LIMIT: u32 = 100;
 
 #[update]
 async fn register_neuron_pair(
     args: RegisterNeuronPairArgs,
 ) -> Result<u64, RegisterNeuronPairError> {
-    let caller = ic_cdk::caller();
-    let wtn_governance_canister = state::read(|s| s.wtn_governance_canister_id());
+    let PrepareSuccess {
+        caller,
+        wtn_governance_canister,
+    } = match prepare() {
+        Ok(success) => success,
+        Err(error) => return Err(error),
+    };
 
     match call_get_neuron(wtn_governance_canister, args.wtn_neuron_id).await {
         Ok(response) => match response.0.result.unwrap() {
@@ -47,6 +53,27 @@ async fn register_neuron_pair(
     } else {
         Err(RegisterNeuronPairError::AlreadyRegistered)
     }
+}
+
+struct PrepareSuccess {
+    caller: Principal,
+    wtn_governance_canister: Principal,
+}
+
+fn prepare() -> Result<PrepareSuccess, RegisterNeuronPairError> {
+    state::read(|s| {
+        if s.neuron_pairs().len() >= REGISTRATIONS_LIMIT as usize {
+            Err(RegisterNeuronPairError::RegistrationLimitExceeded(
+                REGISTRATIONS_LIMIT,
+            ))
+        } else {
+            Ok(s.wtn_governance_canister_id())
+        }
+    })
+    .map(|wtn_governance_canister| PrepareSuccess {
+        caller: ic_cdk::caller(),
+        wtn_governance_canister,
+    })
 }
 
 async fn call_get_neuron(
