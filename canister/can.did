@@ -1,3 +1,23 @@
+type CanisterStatusResponse = record {
+  status : CanisterStatusType;
+  memory_size : nat;
+  cycles : nat;
+  settings : DefiniteCanisterSettings;
+  query_stats : QueryStats;
+  idle_cycles_burned_per_day : nat;
+  module_hash : opt blob;
+  reserved_cycles : nat;
+};
+type CanisterStatusType = variant { stopped; stopping; running };
+type DefiniteCanisterSettings = record {
+  freezing_threshold : nat;
+  controllers : vec principal;
+  reserved_cycles_limit : nat;
+  log_visibility : LogVisibility;
+  wasm_memory_limit : nat;
+  memory_allocation : nat;
+  compute_allocation : nat;
+};
 type DeregisterNeuronPairArgs = record { pair_id : nat64 };
 type InitArgs = record {
   wtn_governance_canister_id : opt principal;
@@ -5,12 +25,23 @@ type InitArgs = record {
   wtn_protocol_canister_id : opt principal;
 };
 type InitOrUpgradeArgs = variant { Upgrade : record {}; Init : InitArgs };
+type LogVisibility = variant {
+  controllers;
+  public;
+  allowed_viewers : vec principal;
+};
 type NeuronPairPublic = record {
   id : nat64;
   admin : principal;
   name : text;
   nns_neuron_id : nat64;
   wtn_neuron_id : blob;
+};
+type QueryStats = record {
+  response_payload_bytes_total : nat;
+  num_instructions_total : nat;
+  num_calls_total : nat;
+  request_payload_bytes_total : nat;
 };
 type RegisterNeuronPairArgs = record {
   name : text;
@@ -30,4 +61,5 @@ service : (InitOrUpgradeArgs) -> {
   list_neuron_pairs : () -> (vec NeuronPairPublic) query;
   logs : () -> (vec text) query;
   register_neuron_pair : (RegisterNeuronPairArgs) -> (Result);
+  status : () -> (CanisterStatusResponse);
 }

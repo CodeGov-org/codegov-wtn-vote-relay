@@ -1,4 +1,5 @@
 use candid::CandidType;
+use ic_cdk::api::management_canister::main::{CanisterIdRecord, CanisterStatusResponse};
 use ic_principal::Principal;
 use serde::{Deserialize, Serialize};
 
