@@ -118,14 +118,26 @@ async fn process_vote(vote: VoteToProcess) {
                     vote: if wtn_vote.adopt { 1 } else { 2 },
                 })),
             };
-            let response: CallResult<()> =
-                ic_cdk::call(canister_id, "manage_neuron", (args,)).await;
-            state::mutate(|s| {
-                if let Err(error) = response {
-                    ic_cdk::eprintln!("Error calling `manage_neuron`: {error:?}");
-                    s.push_vote_to_process(VoteToProcess::PendingWtnVote(pair_id, wtn_vote));
-                } else {
+            let response: CallResult<(ManageNeuronResponse,)> =
+                ic_cdk::call(canister_id, "manage_neuron", (&args,)).await;
+            state::mutate(|s| match response.map(|r| r.0.command) {
+                Ok(Some(CommandResponse::RegisterVote(_))) => {
                     s.record_wtn_vote_registered(pair_id, wtn_vote);
+                }
+                Ok(Some(CommandResponse::Error(error))) => {
+                    ic_cdk::eprintln!(
+                        "Governance canister returned an error: {error:?}. Args: {args:?}"
+                    );
+                    s.push_vote_to_process(VoteToProcess::PendingWtnVote(pair_id, wtn_vote));
+                }
+                Ok(None) => {
+                    ic_cdk::eprintln!(
+                        "Governance canister returned an empty response. Args: {args:?}"
+                    );
+                }
+                Err(error) => {
+                    ic_cdk::eprintln!("Error calling `manage_neuron`: {error:?}. Args: {args:?}");
+                    s.push_vote_to_process(VoteToProcess::PendingWtnVote(pair_id, wtn_vote));
                 }
             });
         }
@@ -144,24 +156,44 @@ async fn get_wtn_proposal_id(
     response.map(|r| r.0)
 }
 
-#[derive(CandidType, Serialize, Deserialize)]
+#[derive(CandidType, Serialize, Deserialize, Debug)]
+struct ProposalId {
+    id: u64,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Debug)]
 struct ManageNeuronArgs {
     subaccount: Vec<u8>,
     command: Option<Command>,
 }
 
-#[derive(CandidType, Serialize, Deserialize)]
+#[derive(CandidType, Serialize, Deserialize, Debug)]
 enum Command {
     RegisterVote(RegisterVote),
 }
 
-#[derive(CandidType, Serialize, Deserialize)]
+#[derive(CandidType, Serialize, Deserialize, Debug)]
 struct RegisterVote {
     proposal: Option<ProposalId>,
     vote: i32,
 }
 
-#[derive(CandidType, Serialize, Deserialize)]
-struct ProposalId {
-    id: u64,
+#[derive(CandidType, Serialize, Deserialize, Debug)]
+struct ManageNeuronResponse {
+    command: Option<CommandResponse>,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Debug)]
+enum CommandResponse {
+    Error(GovernanceError),
+    RegisterVote(RegisterVoteResponse),
+}
+
+#[derive(CandidType, Serialize, Deserialize, Debug)]
+struct RegisterVoteResponse {}
+
+#[derive(CandidType, Serialize, Deserialize, Debug)]
+struct GovernanceError {
+    error_type: i32,
+    error_message: String,
 }
