@@ -1,4 +1,4 @@
-use ic_cdk::api::management_canister::main::{CanisterIdRecord, CanisterStatusResponse};
+use crate::{CanisterIdRecord, CanisterStatusResponse};
 use ic_cdk::update;
 
 #[update]
