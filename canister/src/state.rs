@@ -130,7 +130,7 @@ impl State {
 
     pub fn record_wtn_vote_registered(&mut self, pair_id: u64, vote: WtnVote) {
         if let Some(pair) = self.neuron_pairs.get_mut(&pair_id) {
-            log(format!("WTN vote registered: {vote:?}"));
+            log(format!("WTN vote registered: {vote:?}. PairId: {pair_id}"));
             pair.record_wtn_vote_registered(vote);
         }
     }
