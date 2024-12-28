@@ -28,7 +28,8 @@ fn run() {
 }
 
 async fn process_vote(vote: VoteToProcess) {
-    log(format!("Processing vote: {vote:?}"));
+    let vote_string = format!("{vote:?}");
+    log(format!("Processing vote: {vote_string}"));
 
     match vote {
         VoteToProcess::NnsVote(pair_id, nns_vote) => {
@@ -144,6 +145,8 @@ async fn process_vote(vote: VoteToProcess) {
             });
         }
     }
+
+    log(format!("Finished processing vote: {vote_string}"));
 
     state::read(start_job_if_required);
 }
