@@ -103,46 +103,45 @@ async fn process_vote(vote: VoteToProcess) {
             }
         }
         VoteToProcess::PendingWtnVote(pair_id, wtn_vote) => {
-            let Some((canister_id, neuron_id)) = state::read(|s| {
+            if let Some((canister_id, neuron_id)) = state::read(|s| {
                 s.neuron_pairs()
                     .get(&pair_id)
                     .map(|p| (s.wtn_governance_canister_id(), p.wtn_neuron_id()))
-            }) else {
-                return;
-            };
-            let args = ManageNeuronArgs {
-                subaccount: neuron_id.to_vec(),
-                command: Some(Command::RegisterVote(RegisterVote {
-                    proposal: Some(ProposalId {
-                        id: wtn_vote.wtn_proposal_id,
-                    }),
-                    vote: if wtn_vote.adopt { 1 } else { 2 },
-                })),
-            };
-            let response: CallResult<(ManageNeuronResponse,)> =
-                ic_cdk::call(canister_id, "manage_neuron", (&args,)).await;
-            state::mutate(|s| match response.map(|r| r.0.command) {
-                Ok(Some(CommandResponse::RegisterVote(_))) => {
-                    s.record_wtn_vote_registered(pair_id, wtn_vote);
-                }
-                Ok(Some(CommandResponse::Error(error))) => {
-                    log(format!(
-                        "Governance canister returned an error: {error:?}. Args: {args:?}"
-                    ));
-                    s.push_vote_to_process(VoteToProcess::PendingWtnVote(pair_id, wtn_vote));
-                }
-                Ok(None) => {
-                    log(format!(
-                        "Governance canister returned an empty response. Args: {args:?}"
-                    ));
-                }
-                Err(error) => {
-                    log(format!(
-                        "Error calling `manage_neuron`: {error:?}. Args: {args:?}"
-                    ));
-                    s.push_vote_to_process(VoteToProcess::PendingWtnVote(pair_id, wtn_vote));
-                }
-            });
+            }) {
+                let args = ManageNeuronArgs {
+                    subaccount: neuron_id.to_vec(),
+                    command: Some(Command::RegisterVote(RegisterVote {
+                        proposal: Some(ProposalId {
+                            id: wtn_vote.wtn_proposal_id,
+                        }),
+                        vote: if wtn_vote.adopt { 1 } else { 2 },
+                    })),
+                };
+                let response: CallResult<(ManageNeuronResponse,)> =
+                    ic_cdk::call(canister_id, "manage_neuron", (&args,)).await;
+                state::mutate(|s| match response.map(|r| r.0.command) {
+                    Ok(Some(CommandResponse::RegisterVote(_))) => {
+                        s.record_wtn_vote_registered(pair_id, wtn_vote);
+                    }
+                    Ok(Some(CommandResponse::Error(error))) => {
+                        log(format!(
+                            "Governance canister returned an error: {error:?}. Args: {args:?}"
+                        ));
+                        s.push_vote_to_process(VoteToProcess::PendingWtnVote(pair_id, wtn_vote));
+                    }
+                    Ok(None) => {
+                        log(format!(
+                            "Governance canister returned an empty response. Args: {args:?}"
+                        ));
+                    }
+                    Err(error) => {
+                        log(format!(
+                            "Error calling `manage_neuron`: {error:?}. Args: {args:?}"
+                        ));
+                        s.push_vote_to_process(VoteToProcess::PendingWtnVote(pair_id, wtn_vote));
+                    }
+                });
+            }
         }
     }
 
