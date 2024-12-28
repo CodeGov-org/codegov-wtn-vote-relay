@@ -127,7 +127,6 @@ async fn process_vote(vote: VoteToProcess) {
                         log(format!(
                             "Governance canister returned an error: {error:?}. Args: {args:?}"
                         ));
-                        s.push_vote_to_process(VoteToProcess::PendingWtnVote(pair_id, wtn_vote));
                     }
                     Ok(None) => {
                         log(format!(
