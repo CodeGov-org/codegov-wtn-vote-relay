@@ -91,7 +91,7 @@ async fn process_vote(vote: VoteToProcess) {
                             }
                         }
                         Err(error) => {
-                            ic_cdk::eprintln!("Error calling `get_wtn_proposal_id`: {error:?}");
+                            log(format!("Error calling `get_wtn_proposal_id`: {error:?}"));
                             Some(VoteToProcess::NnsVote(pair_id, nns_vote))
                         }
                     }
@@ -125,18 +125,20 @@ async fn process_vote(vote: VoteToProcess) {
                     s.record_wtn_vote_registered(pair_id, wtn_vote);
                 }
                 Ok(Some(CommandResponse::Error(error))) => {
-                    ic_cdk::eprintln!(
+                    log(format!(
                         "Governance canister returned an error: {error:?}. Args: {args:?}"
-                    );
+                    ));
                     s.push_vote_to_process(VoteToProcess::PendingWtnVote(pair_id, wtn_vote));
                 }
                 Ok(None) => {
-                    ic_cdk::eprintln!(
+                    log(format!(
                         "Governance canister returned an empty response. Args: {args:?}"
-                    );
+                    ));
                 }
                 Err(error) => {
-                    ic_cdk::eprintln!("Error calling `manage_neuron`: {error:?}. Args: {args:?}");
+                    log(format!(
+                        "Error calling `manage_neuron`: {error:?}. Args: {args:?}"
+                    ));
                     s.push_vote_to_process(VoteToProcess::PendingWtnVote(pair_id, wtn_vote));
                 }
             });
