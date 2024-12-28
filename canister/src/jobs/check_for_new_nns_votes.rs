@@ -51,7 +51,7 @@ async fn run_single(
             true
         }
         error => {
-            ic_cdk::eprintln!("Error calling `get_neuron_info`: {error:?}");
+            log(format!("Error calling `get_neuron_info`: {error:?}"));
             false
         }
     }
