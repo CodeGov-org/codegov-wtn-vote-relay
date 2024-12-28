@@ -145,6 +145,10 @@ impl State {
         self.votes_to_process.pop_front()
     }
 
+    pub fn votes_to_process(&self) -> Vec<VoteToProcess> {
+        self.votes_to_process.iter().cloned().collect()
+    }
+
     pub fn votes_to_process_count(&self) -> usize {
         self.votes_to_process.len()
     }
