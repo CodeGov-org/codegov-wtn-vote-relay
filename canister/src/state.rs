@@ -107,6 +107,7 @@ impl State {
             Occupied(e) => {
                 if e.get().admin() == caller {
                     e.remove();
+                    self.votes_to_process.retain(|v| v.pair_id() != pair_id);
                     true
                 } else {
                     false
