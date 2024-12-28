@@ -50,6 +50,16 @@ enum VoteToProcess {
     PendingWtnVote(u64, WtnVote),
 }
 
+impl VoteToProcess {
+    fn pair_id(&self) -> u64 {
+        match self {
+            VoteToProcess::NnsVote(pair_id, _) | VoteToProcess::PendingWtnVote(pair_id, _) => {
+                *pair_id
+            }
+        }
+    }
+}
+
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 struct NnsVote {
     proposal_id: u64,
