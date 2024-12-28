@@ -37,6 +37,7 @@ type NeuronPairPublic = record {
   nns_neuron_id : nat64;
   wtn_neuron_id : blob;
 };
+type NnsVote = record { adopt : bool; proposal_id : nat64 };
 type QueryStats = record {
   response_payload_bytes_total : nat;
   num_instructions_total : nat;
@@ -56,10 +57,20 @@ type RegisterNeuronPairError = variant {
   GovernanceError : record { int32; text };
 };
 type Result = variant { Ok : nat64; Err : RegisterNeuronPairError };
+type VoteToProcess = variant {
+  NnsVote : record { nat64; NnsVote };
+  PendingWtnVote : record { nat64; WtnVote };
+};
+type WtnVote = record {
+  nns_proposal_id : nat64;
+  adopt : bool;
+  wtn_proposal_id : nat64;
+};
 service : (InitOrUpgradeArgs) -> {
   deregister_neuron_pair : (DeregisterNeuronPairArgs) -> (bool);
   list_neuron_pairs : () -> (vec NeuronPairPublic) query;
   logs : () -> (vec text) query;
   register_neuron_pair : (RegisterNeuronPairArgs) -> (Result);
   status : () -> (CanisterStatusResponse);
+  votes_to_process : () -> (vec VoteToProcess) query;
 }
